@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Date Parser</string>
+    <string name="match">Match</string>
+    <string name="url">URL</string>
+    <string name="template_phrase">31.10.2025</string>
+    <string name="target_phrase">Target phrase</string>
+    <string name="monitoring">Monitoring…</string>
+    <string name="enter_url">Enter URL</string>
+    <string name="enter_target_phrase">Enter target phrase</string>
+    <string name="enter_time_interval">Enter time interval(minimum 15)</string>
+    <string name="time_interval">Time interval</string>
+    <string name="stop">Stop</string>
+    <string name="check">Check</string>
+    <string name="stopped">Stopped</string>
+    <string name="start">Start</string>
+    <string name="not_match">Doesn\'t match</string>
+    <string name="apply">Apply</string>
+    <string name="phrase_does_not_match">Phrase does not match!</string>
+    <string name="press_stop_to_disable">Press Stop to disable</string>
+    <string name="incorrect_format">Incorrect format</string>
+    <string name="the_interval_cannot_be_less_than_15_minutes">The interval cannot be less than 15 minutes.</string>
+    <string name="link_cannot_be_empty">Link cannot be empty.</string>
+    <string name="target_phrase_cannot_be_empty">Target phrase cannot be empty.</string>
+</resources>

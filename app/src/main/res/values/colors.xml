@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="background">#FFFFFF</color>
+
+    <color name="main_text">#000000</color>
+    <color name="secondary_text">#C0C0C0</color>
+
+    <color name="border">#C0C0C0</color>
+
+    <color name="button_active">#00B6F0</color>
+    <color name="button_active_text">#fff</color>
+
+    <color name="button_stop">#C5C6CC</color>
+    <color name="button_stop_text">#FF0000</color>
+    <color name="button_start_text">#37CD00</color>
+
+    <color name="match_color">#37CD00</color>
+    <color name="not_match_color">#FF0000</color>
+
+</resources>
