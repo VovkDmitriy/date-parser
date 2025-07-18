@@ -5,6 +5,8 @@
 package upwork.date.parser;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -13,6 +15,8 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -27,6 +31,7 @@ import upwork.date.parser.databinding.ActivityMainBinding;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
+
 
     /**
      * Initializes UI and prepares edge-to-edge layout.
@@ -63,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
         binding.targetPhrase.setText(SaveManager.getTarget(this));
         setListeners();
         checkInputs();
+        checkNotificationPermission();
     }
 
     /**
@@ -70,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void setListeners() {
         binding.startStopBtn.setOnClickListener(view -> {
-            if (SaveManager.isMonitoring(this)) {
+            if (SaveManager.isMonitoring(this) || binding.startStopText.getText().equals(getString(R.string.stop))) {
                 stopMonitoring();
                 SaveManager.isMonitoring(this, false);
             } else {
@@ -238,5 +244,37 @@ public class MainActivity extends AppCompatActivity {
         binding.matchText.setTextColor(getColor(colorRes));
         binding.matchText.setText(getString(textRes));
         binding.parsedResult.setTextColor(getColor(colorRes));
+
+        if (!isMatch){
+            if (!AlarmService.isServiceRunning()) {
+                Intent intent2 = new Intent(this, AlarmService.class)
+                        .setAction(AlarmService.ACTION_START);
+                startForegroundService(intent2);
+                binding.startStopText.setText(getString(R.string.stop));
+                binding.startStopText.setTextColor(getColor(R.color.button_stop_text));
+            }
+        }else{
+            if (AlarmService.isServiceRunning()) {
+                Intent intent2 = new Intent(this, AlarmService.class)
+                        .setAction(AlarmService.ACTION_STOP);
+                startService(intent2);
+            }
+        }
+        SaveManager.setLastState(this, isMatch);
+    }
+
+    void checkNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this,
+                    android.Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{ android.Manifest.permission.POST_NOTIFICATIONS },
+                        101
+                );
+            }
+        }
     }
 }

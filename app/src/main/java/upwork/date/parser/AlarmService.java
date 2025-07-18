@@ -23,6 +23,13 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 public class AlarmService extends Service {
+
+    private static boolean isRunning = false;
+
+    /** Returns true if the service is currently running. */
+    public static boolean isServiceRunning() {
+        return isRunning;
+    }
     /**
      * Action string to start the alarm service
      */
@@ -66,15 +73,31 @@ public class AlarmService extends Service {
         createChannelIfNeeded();
         Intent stopIntent = new Intent(this, AlarmService.class)
                 .setAction(ACTION_STOP);
-        PendingIntent pi = PendingIntent.getService(this, 0, stopIntent,
-                PendingIntent.FLAG_IMMUTABLE);
+
+        PendingIntent pi;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            pi = PendingIntent.getForegroundService(
+                    this,
+                    0,
+                    stopIntent,
+                    PendingIntent.FLAG_IMMUTABLE
+            );
+        } else {
+            pi = PendingIntent.getService(
+                    this,
+                    0,
+                    stopIntent,
+                    PendingIntent.FLAG_IMMUTABLE
+            );
+        }
 
         return new NotificationCompat.Builder(this, channelId)
-                .setContentTitle(getApplicationContext().getString(R.string.phrase_does_not_match))
-                .setContentText(getApplicationContext().getString(R.string.press_stop_to_disable))
+                .setContentTitle(getString(R.string.phrase_does_not_match))
+                .setContentText(getString(R.string.press_stop_to_disable))
                 .setSmallIcon(R.drawable.baseline_access_alarm_24)
                 .addAction(R.drawable.baseline_stop_24,
-                        getApplicationContext().getString(R.string.stop), pi)
+                        getString(R.string.stop),
+                        pi)
                 .setOngoing(true)
                 .build();
     }
@@ -121,21 +144,25 @@ public class AlarmService extends Service {
      * Creates a NotificationChannel if running on Android O or higher.
      */
     private void createChannelIfNeeded() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel chan = new NotificationChannel(
-                    channelId,
-                    "Alarm Service Channel",
-                    NotificationManager.IMPORTANCE_HIGH
-            );
-            chan.setShowBadge(true);
-            getSystemService(NotificationManager.class)
-                    .createNotificationChannel(chan);
-        }
+        NotificationChannel chan = new NotificationChannel(
+                channelId,
+                "Alarm Service Channel",
+                NotificationManager.IMPORTANCE_HIGH
+        );
+        chan.setShowBadge(true);
+        getSystemService(NotificationManager.class)
+                .createNotificationChannel(chan);
     }
 
     /**
      * Called when the service is being destroyed. Stops any playing ringtone and cancels the timer.
      */
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        isRunning = true;
+    }
+
     @Override
     public void onDestroy() {
         if (ringtone != null && ringtone.isPlaying()) {
@@ -144,6 +171,8 @@ public class AlarmService extends Service {
         if (timer != null) {
             timer.cancel();
         }
+        isRunning = false;
+
         super.onDestroy();
     }
 

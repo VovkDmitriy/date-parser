@@ -94,4 +94,17 @@ public class SaveManager {
                 .putBoolean("is_monitoring", isMonitoring)
                 .apply();
     }
+
+
+    public static boolean getLastState(Context context) {
+        return context.getSharedPreferences("TABLE", Context.MODE_PRIVATE)
+                .getBoolean("lastState", false);
+    }
+
+    public static void setLastState(Context context, boolean lastState) {
+        context.getSharedPreferences("TABLE", Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean("lastState", lastState)
+                .apply();
+    }
 }

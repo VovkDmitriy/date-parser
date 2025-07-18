@@ -23,5 +23,5 @@ public class Constants {
     /**
      * Initial delayed start in minutes before the first background check.
      */
-    public static final long DELAYED_START = 2L;
+    public static final long DELAYED_START = 1L;
 }

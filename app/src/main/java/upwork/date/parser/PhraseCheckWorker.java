@@ -66,7 +66,7 @@ public class PhraseCheckWorker extends Worker {
                 throw new IOException("Failed to parse date in scripts");
             }
 
-            if (!date.equals(expected)) {
+            if (!date.equals(expected) && !AlarmService.isServiceRunning()) {
                 Intent intent = new Intent(getApplicationContext(), AlarmService.class)
                         .setAction(AlarmService.ACTION_START);
                 getApplicationContext().startForegroundService(intent);
