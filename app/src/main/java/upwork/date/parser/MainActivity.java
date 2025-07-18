@@ -20,12 +20,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.work.Constraints;
-import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.NetworkType;
-import androidx.work.PeriodicWorkRequest;
-import androidx.work.WorkManager;
-import java.util.concurrent.TimeUnit;
 import upwork.date.parser.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
@@ -80,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
                 stopMonitoring();
                 SaveManager.isMonitoring(this, false);
             } else {
-                startMonitoring(SaveManager.getInterval(this));
+                startMonitoring();
                 SaveManager.isMonitoring(this, true);
             }
             setMonitoring();
@@ -131,8 +125,8 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, getString(R.string.incorrect_format), Toast.LENGTH_SHORT).show();
             return;
         }
-        if (interval < Constants.DEFAULT_INTERVAL) {
-            Toast.makeText(this, getString(R.string.the_interval_cannot_be_less_than_15_minutes), Toast.LENGTH_SHORT).show();
+        if (interval < Constants.MINIMUM_INTERVAL) {
+            Toast.makeText(this, getString(R.string.the_interval_cannot_be_less_than), Toast.LENGTH_SHORT).show();
             return;
         }
         String url = binding.urlField.getText().toString();
@@ -149,9 +143,11 @@ public class MainActivity extends AppCompatActivity {
         SaveManager.setInterval(this, interval);
         SaveManager.setUrl(this, url);
         SaveManager.setTarget(this, target);
-        checkTargetPhrase();
         if (SaveManager.isMonitoring(this)) {
-            startMonitoring(interval);
+            checkTargetPhrase();
+            Intent svc = new Intent(this, AlarmService.class)
+                    .setAction(AlarmService.ACTION_UPDATE_INTERVAL);
+            startForegroundService(svc);
         }
     }
 
@@ -176,35 +172,21 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Initiates an asynchronous check of the target phrase via WorkManager.
      */
-    private void startMonitoring(int intervalMinutes) {
-        stopMonitoring();
-        Constraints constraints = new Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .setRequiresBatteryNotLow(true)
-                .build();
-        PeriodicWorkRequest workRequest = new PeriodicWorkRequest.Builder(
-                PhraseCheckWorker.class, intervalMinutes, TimeUnit.MINUTES)
-                .setConstraints(constraints)
-                .setInitialDelay(Constants.DELAYED_START, TimeUnit.MINUTES)
-                .addTag("date_check")
-                .build();
-        WorkManager.getInstance(this)
-                .enqueueUniquePeriodicWork(
-                        "date_check",
-                        ExistingPeriodicWorkPolicy.REPLACE,
-                        workRequest
-                );
+    private void startMonitoring() {
+        Intent svc = new Intent(this, AlarmService.class)
+                .setAction(AlarmService.ACTION_START);
+        startForegroundService(svc);
     }
 
     /**
      * Cancels active monitoring jobs and stops any active alarm service.
      */
     private void stopMonitoring() {
-        WorkManager.getInstance(this)
-                .cancelUniqueWork("date_check");
-        Intent intent = new Intent(this, AlarmService.class)
-                .setAction(AlarmService.ACTION_STOP);
-        startService(intent);
+        if (AlarmService.isServiceRun) {
+            Intent intent = new Intent(this, AlarmService.class)
+                    .setAction(AlarmService.ACTION_STOP_SERVICE);
+            startForegroundService(intent);
+        }
     }
 
     /**
@@ -245,22 +227,6 @@ public class MainActivity extends AppCompatActivity {
         binding.matchText.setText(getString(textRes));
         binding.parsedResult.setTextColor(getColor(colorRes));
 
-        if (!isMatch){
-            if (!AlarmService.isServiceRunning()) {
-                Intent intent2 = new Intent(this, AlarmService.class)
-                        .setAction(AlarmService.ACTION_START);
-                startForegroundService(intent2);
-                binding.startStopText.setText(getString(R.string.stop));
-                binding.startStopText.setTextColor(getColor(R.color.button_stop_text));
-            }
-        }else{
-            if (AlarmService.isServiceRunning()) {
-                Intent intent2 = new Intent(this, AlarmService.class)
-                        .setAction(AlarmService.ACTION_STOP);
-                startService(intent2);
-            }
-        }
-        SaveManager.setLastState(this, isMatch);
     }
 
     void checkNotificationPermission() {

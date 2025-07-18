@@ -13,7 +13,12 @@ public class Constants {
     /**
      * Default polling interval in minutes between checks.
      */
-    public static final int DEFAULT_INTERVAL = 15;
+    public static final int DEFAULT_INTERVAL = 10;
+
+    /**
+     * Minimum polling interval in minutes between checks.
+     */
+    public static final int MINIMUM_INTERVAL = 5;
 
     /**
      * Default target phrase to compare against the parsed value.
@@ -23,5 +28,5 @@ public class Constants {
     /**
      * Initial delayed start in minutes before the first background check.
      */
-    public static final long DELAYED_START = 1L;
+    public static final long NOTIFICATION_TIME = 10L;
 }
